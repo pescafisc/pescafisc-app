@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PESCAFISC - Gestión Profesional de Torneos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .chat-message {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .tournament-card {
+            transition: all 0.3s ease;
+        }
+        
+        .tournament-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-active { background-color: #10b981; }
+        .status-pending { background-color: #f59e0b; }
+        .status-completed { background-color: #6b7280; }
+        
+        .fiscal-alert {
+            animation: alertBlink 1s infinite;
+        }
+        
+        @keyframes alertBlink {
+            0%, 50% { background-color: #fef2f2; }
+            51%, 100% { background-color: #fee2e2; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-cyan-100 min-h-screen">
+    <!-- Header Navigation -->
+    <nav class="bg-white shadow-lg border-b-4 border-blue-600">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-blue-600 text-white p-3 rounded-lg">
+                        <i class="fas fa-fish text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">PESCAFISC</h1>
+                        <p class="text-sm text-gray-600">Sistema Profesional de Torneos</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+                    <div class="relative">
+                        <i class="fas fa-bell text-gray-600 text-xl cursor-pointer"></i>
+                        <span class="notification-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                        <span class="text-gray-700 font-medium">Admin Principal</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-lg h-screen sticky top-0">
+            <div class="p-6">
+                <div class="space-y-2">
+                    <button onclick="showSection('dashboard')" class="nav-btn w-full text-left px-4 py-3 rounded-lg bg-blue-600 text-white flex items-center space-x-3">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button onclick="showSection('tournaments')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center space-x-3">
+                        <i class="fas fa-trophy"></i>
+                        <span>Torneos</span>
+                    </button>
+                    <button onclick="showSection('registrations')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center space-x-3">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Inscripciones</span>
+                    </button>
+                    <button onclick="showSection('fiscalization')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center space-x-3">
+                        <i class="fas fa-eye"></i>
+                        <span>Fiscalización</span>
+                    </button>
+                    <button onclick="showSection('chat')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center space-x-3">
+                        <i class="fas fa-comments"></i>
+                        <span>Chat Fiscalizadores</span>
+                        <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 ml-auto">2</span>
+                    </button>
+                    <button onclick="showSection('reports')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center space-x-3">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Reportes PDF</span>
+                    </button>
+                    <button onclick="showSection('sync')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center space-x-3">
+                        <i class="fas fa-sync"></i>
+                        <span>Sincronización</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Dashboard Principal</h2>
+                    <p class="text-gray-600">Resumen completo del sistema de torneos</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Torneos Activos</p>
+                                <p class="text-3xl font-bold text-gray-800">12</p>
+                            </div>
+                            <i class="fas fa-trophy text-blue-500 text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Participantes</p>
+                                <p class="text-3xl font-bold text-gray-800">1,247</p>
+                            </div>
+                            <i class="fas fa-users text-green-500 text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Fiscalizadores</p>
+                                <p class="text-3xl font-bold text-gray-800">28</p>
+                            </div>
+                            <i class="fas fa-eye text-yellow-500 text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Alertas Activas</p>
+                                <p class="text-3xl font-bold text-gray-800">5</p>
+                            </div>
+                            <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Actividad en Tiempo Real</h3>
+                        <div class="space-y-4" id="realTimeActivity">
+                            <div class="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                                <div class="status-indicator status-active"></div>
+                                <div class="flex-1">
+                                    <p class="font-medium text-gray-800">Nueva inscripción - Torneo Costa Brava</p>
+                                    <p class="text-sm text-gray-600">Hace 2 minutos</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 p-3 bg-yellow-50 rounded-lg">
+                                <div class="status-indicator status-pending"></div>
+                                <div class="flex-1">
+                                    <p class="font-medium text-gray-800">Fiscalizador conectado - Zona Norte</p>
+                                    <p class="text-sm text-gray-600">Hace 5 minutos</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+                                <div class="status-indicator status-active"></div>
+                                <div class="flex-1">
+                                    <p class="font-medium text-gray-800">Sincronización completada</p>
+                                    <p class="text-sm text-gray-600">Hace 8 minutos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Próximos Eventos</h3>
+                        <div class="space-y-4">
+                            <div class="border-l-4 border-blue-500 pl-4">
+                                <h4 class="font-bold text-gray-800">Torneo Nacional de Pesca</h4>
+                                <p class="text-sm text-gray-600">15 de Marzo, 2024 - 06:00 AM</p>
+                                <p class="text-sm text-blue-600">156 inscritos</p>
+                            </div>
+                            <div class="border-l-4 border-green-500 pl-4">
+                                <h4 class="font-bold text-gray-800">Copa Regional Sur</h4>
+                                <p class="text-sm text-gray-600">22 de Marzo, 2024 - 05:30 AM</p>
+                                <p class="text-sm text-green-600">89 inscritos</p>
+                            </div>
+                            <div class="border-l-4 border-yellow-500 pl-4">
+                                <h4 class="font-bold text-gray-800">Campeonato Juvenil</h4>
+                                <p class="text-sm text-gray-600">28 de Marzo, 2024 - 07:00 AM</p>
+                                <p class="text-sm text-yellow-600">43 inscritos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tournaments Section -->
+            <div id="tournaments" class="section hidden">
+                <div class="mb-8 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Gestión de Torneos</h2>
+                        <p class="text-gray-600">Crear y administrar torneos complejos</p>
+                    </div>
+                    <button onclick="showCreateTournament()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2">
+                        <i class="fas fa-plus"></i>
+                        <span>Crear Torneo</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="tournament-card bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i class="fas fa-trophy text-blue-600 text-xl"></i>
+                            </div>
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Activo</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Torneo Nacional 2024</h3>
+                        <p class="text-gray-600 mb-4">Competencia nacional con múltiples categorías y premios especiales</p>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Inscritos:</span>
+                                <span class="font-medium">156/200</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Fecha:</span>
+                                <span class="font-medium">15 Mar 2024</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Fiscalizadores:</span>
+                                <span class="font-medium">8 asignados</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm">
+                                Gestionar
+                            </button>
+                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tournament-card bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-green-100 p-3 rounded-lg">
+                                <i class="fas fa-medal text-green-600 text-xl"></i>
+                            </div>
+                            <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">Inscripciones</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Copa Regional Sur</h3>
+                        <p class="text-gray-600 mb-4">Torneo regional con sistema de eliminatorias y clasificación automática</p>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Inscritos:</span>
+                                <span class="font-medium">89/150</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Fecha:</span>
+                                <span class="font-medium">22 Mar 2024</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Fiscalizadores:</span>
+                                <span class="font-medium">6 asignados</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg text-sm">
+                                Gestionar
+                            </button>
+                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tournament-card bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-purple-100 p-3 rounded-lg">
+                                <i class="fas fa-star text-purple-600 text-xl"></i>
+                            </div>
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Planificado</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Campeonato Juvenil</h3>
+                        <p class="text-gray-600 mb-4">Competencia especial para jóvenes pescadores con categorías por edad</p>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Inscritos:</span>
+                                <span class="font-medium">43/100</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Fecha:</span>
+                                <span class="font-medium">28 Mar 2024</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Fiscalizadores:</span>
+                                <span class="font-medium">4 asignados</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm">
+                                Gestionar
+                            </button>
+                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registrations Section -->
+            <div id="registrations" class="section hidden">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Sistema de Inscripciones Complejas</h2>
+                    <p class="text-gray-600">Gestión avanzada de participantes y documentación</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">Filtros Avanzados</h3>
+                        <button onclick="exportRegistrations()" class="bg-green-600 hover:bg-green-700 text-wh
